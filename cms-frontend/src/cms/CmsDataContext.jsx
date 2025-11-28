@@ -28,6 +28,55 @@ const INITIAL_ITEMS = [
     img: "https://images.unsplash.com/photo-1581291519195-ef11498d1cf5?w=640",
     additionalInfo: [],
   },
+  {
+    id: "4",
+    title: "Contact opnemen",
+    desc: "Neem contact met ons op voor meer informatie of vragen.",
+    img: "https://images.unsplash.com/photo-1581291519195-ef11498d1cf5?w=640",
+    additionalInfo: [],
+  },
+  {
+    id: "5",
+    title: "Contact opnemen",
+    desc: "Neem contact met ons op voor meer informatie of vragen.",
+    img: "https://images.unsplash.com/photo-1581291519195-ef11498d1cf5?w=640",
+    additionalInfo: [],
+  },
+  {
+    id: "6",
+    title: "Contact opnemen",
+    desc: "Neem contact met ons op voor meer informatie of vragen.",
+    img: "https://images.unsplash.com/photo-1581291519195-ef11498d1cf5?w=640",
+    additionalInfo: [],
+  },
+  {
+    id: "7",
+    title: "Contact opnemen",
+    desc: "Neem contact met ons op voor meer informatie of vragen.",
+    img: "https://images.unsplash.com/photo-1581291519195-ef11498d1cf5?w=640",
+    additionalInfo: [],
+  },
+  {
+    id: "8",
+    title: "Contact opnemen",
+    desc: "Neem contact met ons op voor meer informatie of vragen.",
+    img: "https://images.unsplash.com/photo-1581291519195-ef11498d1cf5?w=640",
+    additionalInfo: [],
+  },
+  {
+    id: "9",
+    title: "Contact opnemen",
+    desc: "Neem contact met ons op voor meer informatie of vragen.",
+    img: "https://images.unsplash.com/photo-1581291519195-ef11498d1cf5?w=640",
+    additionalInfo: [],
+  },
+  {
+    id: "10",
+    title: "Contact opnemen",
+    desc: "Neem contact met ons op voor meer informatie of vragen.",
+    img: "https://images.unsplash.com/photo-1581291519195-ef11498d1cf5?w=640",
+    additionalInfo: [],
+  },
 ];
 
 const CmsDataContext = createContext(null);
@@ -46,13 +95,13 @@ export function CmsDataProvider({ children }) {
 
   const updateItem = useCallback((itemId, data) => {
     setItems((prev) =>
-      prev.map((item) => (item.id === itemId ? { ...item, ...data } : item)),
+      prev.map((item) => (item.id === itemId ? { ...item, ...data } : item))
     );
   }, []);
 
   const getItem = useCallback(
     (itemId) => items.find((item) => item.id === itemId),
-    [items],
+    [items]
   );
 
   const value = useMemo(
@@ -62,7 +111,7 @@ export function CmsDataProvider({ children }) {
       updateItem,
       getItem,
     }),
-    [items, reorderItems, updateItem, getItem],
+    [items, reorderItems, updateItem, getItem]
   );
 
   return (

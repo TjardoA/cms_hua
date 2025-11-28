@@ -1,14 +1,16 @@
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../auth/AuthContext";
 import CmsShell from "./CmsShell";
 import { useCmsData } from "./CmsDataContext";
 
 export default function CmsPage() {
   const navigate = useNavigate();
   const { items, reorderItems } = useCmsData();
+  const { canEdit } = useAuth();
 
   const onDragEnd = (result) => {
-    if (!result.destination) return;
+    if (!result.destination || !canEdit) return;
     reorderItems(result.source.index, result.destination.index);
   };
 
@@ -35,20 +37,24 @@ export default function CmsPage() {
                 className="cms-card-stack"
               >
                 {items.map((item, index) => (
-                  <Draggable key={item.id} draggableId={item.id} index={index}>
+                  <Draggable
+                    key={item.id}
+                    draggableId={item.id}
+                    index={index}
+                    isDragDisabled={!canEdit}
+                  >
                     {(dragProvided, snapshot) => (
                       <article
                         ref={dragProvided.innerRef}
                         {...dragProvided.draggableProps}
+                        {...dragProvided.dragHandleProps}
                         className={`cms-card${
                           snapshot.isDragging ? " cms-card--dragging" : ""
                         }`}
                       >
-                        <span
-                          {...dragProvided.dragHandleProps}
-                          className="cms-card__handle"
-                          aria-label="Versleep item"
-                        />
+                        <div className="cms-card__meta">
+                          <span className="cms-card__index">{index + 1}</span>
+                        </div>
 
                         <img
                           className="cms-card__media"
@@ -64,10 +70,12 @@ export default function CmsPage() {
 
                         <button
                           type="button"
-                          className="cms-card__btn"
+                          className={`cms-card__btn${
+                            canEdit ? "" : " cms-card__btn--view"
+                          }`}
                           onClick={() => navigate(`/cms/edit/${item.id}`)}
                         >
-                          Bewerken
+                          {canEdit ? "Bewerken" : "Inspecteren"}
                         </button>
                       </article>
                     )}

@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { useAuth } from "../auth/AuthContext";
 import CmsShell from "./CmsShell";
 import { useCmsData } from "./CmsDataContext";
 
@@ -7,6 +8,8 @@ export default function CmsEdit() {
   const navigate = useNavigate();
   const { id } = useParams();
   const { getItem, updateItem } = useCmsData();
+  const { canEdit } = useAuth();
+  const readOnly = !canEdit;
 
   const item = getItem(id);
 
@@ -37,6 +40,10 @@ export default function CmsEdit() {
 
   const handleSubmit = (event) => {
     event.preventDefault();
+    if (readOnly) {
+      navigate("/cms");
+      return;
+    }
     updateItem(defaults.id, {
       title,
       desc,
@@ -78,7 +85,9 @@ export default function CmsEdit() {
           <div>
             <p className="cms-section-title">Item bewerken</p>
             <p className="cms-section-subtitle">
-              Werk de inhoud bij en vergeet niet om uw wijzigingen op te slaan.
+              {readOnly
+                ? "Alleen super admins kunnen aanpassen. Je bekijkt dit item in leesmodus."
+                : "Werk de inhoud bij en vergeet niet om uw wijzigingen op te slaan."}
             </p>
           </div>
         </div>
@@ -91,6 +100,7 @@ export default function CmsEdit() {
               type="text"
               className="cms-input"
               value={title}
+              disabled={readOnly}
               onChange={(event) => setTitle(event.target.value)}
             />
           </label>
@@ -100,6 +110,7 @@ export default function CmsEdit() {
             <textarea
               className="cms-input cms-input--textarea"
               value={desc}
+              disabled={readOnly}
               onChange={(event) => setDesc(event.target.value)}
             />
           </label>
@@ -110,6 +121,7 @@ export default function CmsEdit() {
               type="url"
               className="cms-input"
               value={image}
+              disabled={readOnly}
               onChange={(event) => setImage(event.target.value)}
             />
           </label>
@@ -135,6 +147,7 @@ export default function CmsEdit() {
                 className="cms-input"
                 placeholder="Titel"
                 value={newInfo.title}
+                disabled={readOnly}
                 onChange={(e) =>
                   setNewInfo((prev) => ({ ...prev, title: e.target.value }))
                 }
@@ -143,6 +156,7 @@ export default function CmsEdit() {
                 className="cms-input cms-input--textarea"
                 placeholder="Beschrijving"
                 value={newInfo.desc}
+                disabled={readOnly}
                 onChange={(e) =>
                   setNewInfo((prev) => ({ ...prev, desc: e.target.value }))
                 }
@@ -152,6 +166,7 @@ export default function CmsEdit() {
                 <button
                   type="button"
                   className="cms-btn cms-btn--primary"
+                  disabled={readOnly}
                   onClick={addAdditionalInfo}
                 >
                   Aanvullende info opslaan
@@ -169,6 +184,7 @@ export default function CmsEdit() {
                         type="text"
                         className="cms-input"
                         value={info.title}
+                        disabled={readOnly}
                         onChange={(e) =>
                           updateExistingInfo(index, "title", e.target.value)
                         }
@@ -179,6 +195,7 @@ export default function CmsEdit() {
                       <textarea
                         className="cms-input cms-input--textarea"
                         value={info.desc}
+                        disabled={readOnly}
                         onChange={(e) =>
                           updateExistingInfo(index, "desc", e.target.value)
                         }
@@ -189,6 +206,7 @@ export default function CmsEdit() {
                       <button
                         type="button"
                         className="cms-btn cms-btn--ghost"
+                        disabled={readOnly}
                         onClick={() => removeAdditionalInfo(index)}
                       >
                         Verwijderen
@@ -202,7 +220,7 @@ export default function CmsEdit() {
 
           <div className="cms-form-actions">
             <button type="submit" className="cms-btn cms-btn--primary">
-              Opslaan
+              {readOnly ? "Terug" : "Opslaan"}
             </button>
             <button
               type="button"
