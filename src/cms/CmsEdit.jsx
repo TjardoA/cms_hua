@@ -214,12 +214,7 @@ export default function CmsEdit() {
 
           <label className="cms-field">
             <span className="cms-field__label">Afbeelding URL</span>
-            <input
-              type="url"
-              className="cms-input"
-              value={image}
-              readOnly
-            />
+            <input type="url" className="cms-input" value={image} readOnly />
             <div className="cms-form-actions">
               <input
                 type="file"
@@ -315,7 +310,8 @@ export default function CmsEdit() {
                     <span>Horizontale positie</span>
                     <span className="cms-slider-value">
                       {toSliderValue(newInfo.x, "x")}px (
-                      {Math.round(Number.isFinite(newInfo.x) ? newInfo.x : 50)}%)
+                      {Math.round(Number.isFinite(newInfo.x) ? newInfo.x : 50)}
+                      %)
                     </span>
                   </div>
                   <input
@@ -339,7 +335,8 @@ export default function CmsEdit() {
                     <span>Verticale positie</span>
                     <span className="cms-slider-value">
                       {toSliderValue(newInfo.y, "y")}px (
-                      {Math.round(Number.isFinite(newInfo.y) ? newInfo.y : 50)}%)
+                      {Math.round(Number.isFinite(newInfo.y) ? newInfo.y : 50)}
+                      %)
                     </span>
                   </div>
                   <input
@@ -404,7 +401,8 @@ export default function CmsEdit() {
                           <span>Horizontale positie</span>
                           <span className="cms-slider-value">
                             {toSliderValue(info.x, "x")}px (
-                            {Math.round(Number.isFinite(info.x) ? info.x : 50)}%)
+                            {Math.round(Number.isFinite(info.x) ? info.x : 50)}
+                            %)
                           </span>
                         </div>
                         <input
@@ -429,7 +427,8 @@ export default function CmsEdit() {
                           <span>Verticale positie</span>
                           <span className="cms-slider-value">
                             {toSliderValue(info.y, "y")}px (
-                            {Math.round(Number.isFinite(info.y) ? info.y : 50)}%)
+                            {Math.round(Number.isFinite(info.y) ? info.y : 50)}
+                            %)
                           </span>
                         </div>
                         <input
@@ -470,6 +469,7 @@ export default function CmsEdit() {
               type="submit"
               className="cms-btn cms-btn--primary"
               disabled={loading || readOnly}
+              onClick={handleSubmit}
             >
               {readOnly ? "Terug" : "Opslaan"}
             </button>
