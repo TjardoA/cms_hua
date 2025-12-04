@@ -2,87 +2,126 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useState,
 } from "react";
-
-const INITIAL_ITEMS = [
-  {
-    id: "1",
-    title: "Welkom bij ons platform",
-    desc: "Ontdek de nieuwste functionaliteiten en mogelijkheden van ons platform.",
-    img: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=640",
-    additionalInfo: [],
-  },
-  {
-    id: "2",
-    title: "Onze diensten",
-    desc: "Wij bieden een breed scala aan diensten voor al uw behoeften.",
-    img: "https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=640",
-    additionalInfo: [],
-  },
-  {
-    id: "3",
-    title: "Contact opnemen",
-    desc: "Neem contact met ons op voor meer informatie of vragen.",
-    img: "https://images.unsplash.com/photo-1581291519195-ef11498d1cf5?w=640",
-    additionalInfo: [],
-  },
-  {
-    id: "4",
-    title: "Contact opnemen",
-    desc: "Neem contact met ons op voor meer informatie of vragen.",
-    img: "https://images.unsplash.com/photo-1581291519195-ef11498d1cf5?w=640",
-    additionalInfo: [],
-  },
-  {
-    id: "5",
-    title: "Contact opnemen",
-    desc: "Neem contact met ons op voor meer informatie of vragen.",
-    img: "https://images.unsplash.com/photo-1581291519195-ef11498d1cf5?w=640",
-    additionalInfo: [],
-  },
-  {
-    id: "6",
-    title: "Contact opnemen",
-    desc: "Neem contact met ons op voor meer informatie of vragen.",
-    img: "https://images.unsplash.com/photo-1581291519195-ef11498d1cf5?w=640",
-    additionalInfo: [],
-  },
-  {
-    id: "7",
-    title: "Contact opnemen",
-    desc: "Neem contact met ons op voor meer informatie of vragen.",
-    img: "https://images.unsplash.com/photo-1581291519195-ef11498d1cf5?w=640",
-    additionalInfo: [],
-  },
-  {
-    id: "8",
-    title: "Contact opnemen",
-    desc: "Neem contact met ons op voor meer informatie of vragen.",
-    img: "https://images.unsplash.com/photo-1581291519195-ef11498d1cf5?w=640",
-    additionalInfo: [],
-  },
-  {
-    id: "9",
-    title: "Contact opnemen",
-    desc: "Neem contact met ons op voor meer informatie of vragen.",
-    img: "https://images.unsplash.com/photo-1581291519195-ef11498d1cf5?w=640",
-    additionalInfo: [],
-  },
-  {
-    id: "10",
-    title: "Contact opnemen",
-    desc: "Neem contact met ons op voor meer informatie of vragen.",
-    img: "https://images.unsplash.com/photo-1581291519195-ef11498d1cf5?w=640",
-    additionalInfo: [],
-  },
-];
+import { useAuth } from "../auth/AuthContext";
+import {
+  fetchPanoramaItems,
+  resolveMediaUrl,
+  updatePanoramaItem,
+} from "./apiClient";
 
 const CmsDataContext = createContext(null);
 
+const normalizeAdditionalInfo = (info = {}) => ({
+  title: info.title ?? info.name ?? "",
+  desc: info.desc ?? info.description ?? "",
+  url: info.url ?? info.link ?? "",
+  x: Number.isFinite(info.x) ? info.x : 50,
+  y: Number.isFinite(info.y) ? info.y : 50,
+});
+
+const pickImage = (item) => {
+  const normalizeValue = (value) => {
+    if (!value) return "";
+    if (Array.isArray(value)) return normalizeValue(value[0]);
+    if (typeof value === "object") {
+      const objCandidates = [
+        value.url,
+        value.path,
+        value.src,
+        value.href,
+        value.file,
+        value.full,
+        value.original,
+        value.thumbnail,
+      ].filter(Boolean);
+      return normalizeValue(objCandidates.find(Boolean));
+    }
+    if (typeof value === "string") return value.trim();
+    return "";
+  };
+
+  const candidates = [
+    item.img,
+    item.image,
+    item.image_url,
+    item.imageUrl,
+    item.photo,
+    item.photo_url,
+    item.photoUrl,
+    item.foto,
+    item.foto_url,
+    item.media,
+    item.media_url,
+    item.picture,
+    item.picture_url,
+    item.thumbnail,
+    item.thumbnail_url,
+    item.thumbnailUrl,
+    item.cover,
+    item.cover_url,
+    item.coverUrl,
+    item.panorama_image,
+    item.panoramaImage,
+    item.file,
+    item.file_url,
+    item.fileUrl,
+    item.asset,
+    item.asset_url,
+  ];
+
+  const found = normalizeValue(candidates.find((c) => normalizeValue(c)));
+  return resolveMediaUrl(found);
+};
+
+const normalizeItem = (item, index) => ({
+  id: String(item.id ?? index + 1),
+  title: item.title ?? item.name ?? `Item ${index + 1}`,
+  desc: item.desc ?? item.description ?? "",
+  img: pickImage(item),
+  additionalInfo: Array.isArray(item.additionalInfo)
+    ? item.additionalInfo.map(normalizeAdditionalInfo)
+    : [],
+  raw: item,
+});
+
 export function CmsDataProvider({ children }) {
-  const [items, setItems] = useState(INITIAL_ITEMS);
+  const [items, setItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const { authToken } = useAuth();
+
+  // initial load from API
+  useEffect(() => {
+    const controller = new AbortController();
+    async function load() {
+      try {
+        setLoading(true);
+        setError(null);
+        const result = await fetchPanoramaItems({
+          signal: controller.signal,
+          token: authToken,
+        });
+        const normalized = (result || []).map((item, index) =>
+          normalizeItem(item, index)
+        );
+        setItems(normalized);
+      } catch (err) {
+        if (err.name === "AbortError") return;
+        console.error("Panorama API fout:", err);
+        setError(err.message || "Kon items niet laden");
+        setItems([]);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    load();
+    return () => controller.abort();
+  }, [authToken]);
 
   const reorderItems = useCallback((fromIndex, toIndex) => {
     setItems((prev) => {
@@ -93,11 +132,29 @@ export function CmsDataProvider({ children }) {
     });
   }, []);
 
-  const updateItem = useCallback((itemId, data) => {
-    setItems((prev) =>
-      prev.map((item) => (item.id === itemId ? { ...item, ...data } : item))
-    );
-  }, []);
+  const updateItem = useCallback(
+    async (itemId, data) => {
+      let snapshot = null;
+      setItems((prev) => {
+        snapshot = prev;
+        return prev.map((item) =>
+          item.id === itemId ? { ...item, ...data } : item
+        );
+      });
+
+      try {
+        await updatePanoramaItem(itemId, data, authToken);
+      } catch (err) {
+        console.error("Kon item niet opslaan:", err);
+        setError(err.message || "Opslaan mislukt");
+        if (snapshot) {
+          setItems(snapshot);
+        }
+        throw err;
+      }
+    },
+    [authToken]
+  );
 
   const getItem = useCallback(
     (itemId) => items.find((item) => item.id === itemId),
@@ -110,8 +167,10 @@ export function CmsDataProvider({ children }) {
       reorderItems,
       updateItem,
       getItem,
+      loading,
+      error,
     }),
-    [items, reorderItems, updateItem, getItem]
+    [items, reorderItems, updateItem, getItem, loading, error]
   );
 
   return (

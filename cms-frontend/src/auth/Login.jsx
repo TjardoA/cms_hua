@@ -57,13 +57,16 @@ export default function Login() {
 
           {error ? <p className="auth-error">{error}</p> : null}
 
-          <button type="submit" className="cms-btn cms-btn--primary auth-submit">
+          <button
+            type="submit"
+            className="cms-btn cms-btn--primary auth-submit"
+          >
             Inloggen
           </button>
 
           <div className="auth-hint">
-            <p>Super admin: super@demo.nl / superadmin</p>
-            <p>Admin: admin@demo.nl / admin</p>
+            <p>Super admin: superadmin@example.com / superadmin</p>
+            <p>Admin: admin@example.com / admin</p>
           </div>
         </form>
       </div>

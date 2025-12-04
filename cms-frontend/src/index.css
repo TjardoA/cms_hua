@@ -426,6 +426,32 @@ button {
   color: #6e645d;
   font-style: italic;
 }
+.cms-preview__image-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.cms-hotspot-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.cms-hotspot {
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--cms-accent);
+  border: 2px solid #fff;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+  transform: translate(-50%, -50%);
+}
+
+.cms-hotspot--draft {
+  background: var(--cms-navy);
+  border-color: #fef3f2;
+}
 
 .cms-additional {
   display: flex;
@@ -447,6 +473,36 @@ button {
   border-radius: 12px;
   padding: 14px;
   box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
+}
+
+.cms-slider-group {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+}
+
+.cms-slider-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.cms-slider-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 600;
+  color: #2f2a26;
+}
+
+.cms-slider-value {
+  color: #6e645d;
+  font-weight: 500;
+  font-size: 0.95rem;
+}
+
+.cms-input--range {
+  accent-color: var(--cms-accent);
 }
 
 .cms-form-actions {

@@ -1,19 +1,32 @@
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
+import useReadApi from "../../components/ReadApi";
 import CmsShell from "./CmsShell";
-import { useCmsData } from "./CmsDataContext";
 
 export default function CmsPage() {
   const navigate = useNavigate();
-  const { items, reorderItems } = useCmsData();
-  const { canEdit } = useAuth();
+  const { canEdit, authToken } = useAuth();
+  const { posts, loading, error, refresh } = useReadApi(authToken);
+  const [items, setItems] = useState([]);
+  const [isSaving, setIsSaving] = useState(false);
 
   const onDragEnd = (result) => {
     if (!result.destination || !canEdit) return;
-    reorderItems(result.source.index, result.destination.index);
+    setItems((prev) => {
+      const next = [...prev];
+      const [moved] = next.splice(result.source.index, 1);
+      next.splice(result.destination.index, 0, moved);
+      return next;
+    });
   };
 
+  useEffect(() => {
+    setItems(posts || []);
+  }, [posts]);
+
+  const handleDelete = async () => {}; // verwijderknop verwijderd van hoofdpagina
   return (
     <CmsShell>
       <section className="cms-panel">
@@ -25,8 +38,32 @@ export default function CmsPage() {
               inhoud aan te passen.
             </p>
           </div>
+          {canEdit ? (
+            <button
+              type="button"
+              className="cms-btn cms-btn--primary"
+              onClick={() => navigate("/cms/edit/new")}
+            >
+              + Nieuw item
+            </button>
+          ) : null}
         </div>
         <span className="cms-panel__divider" aria-hidden="true" />
+
+        {loading ? (
+          <p className="cms-preview__placeholder">Gegevens laden...</p>
+        ) : null}
+        {error ? (
+          <p className="cms-preview__placeholder" role="alert">
+            Fout bij laden: {error}
+          </p>
+        ) : null}
+
+        {!loading && !items.length ? (
+          <p className="cms-preview__placeholder">
+            Geen items beschikbaar uit de API.
+          </p>
+        ) : null}
 
         <DragDropContext onDragEnd={onDragEnd}>
           <Droppable droppableId="list">
