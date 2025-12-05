@@ -14,13 +14,57 @@ import {
 } from "./apiClient";
 
 const CmsDataContext = createContext(null);
+const clampValue = (value, min, max) => Math.min(Math.max(value, min), max);
+const normalizeXCoord = (value) => {
+  if (!Number.isFinite(value)) return 0.5;
+  if (value > 1 || value < 0) {
+    return clampValue(value / 100, 0, 1);
+  }
+  return clampValue(value, 0, 1);
+};
+const normalizeYCoord = (value) => {
+  if (!Number.isFinite(value)) return 0;
+  if (value > 0.5 || value < -0.5) {
+    return clampValue(0.5 - value / 100, -0.5, 0.5);
+  }
+  return clampValue(value, -0.5, 0.5);
+};
 
 const normalizeAdditionalInfo = (info = {}) => ({
   title: info.title ?? info.name ?? "",
   desc: info.desc ?? info.description ?? "",
   url: info.url ?? info.link ?? "",
-  x: Number.isFinite(info.x) ? info.x : 50,
-  y: Number.isFinite(info.y) ? info.y : 50,
+  img:
+    info.img ??
+    info.image ??
+    info.image_url ??
+    info.imageUrl ??
+    info.photo ??
+    info.photo_url ??
+    info.photoUrl ??
+    "",
+  x: normalizeXCoord(
+    info.x ??
+      info.x_percent ??
+      info.xPercent ??
+      info.xcoord ??
+      info.x_coord ??
+      info.x_pos ??
+      info.xpos ??
+      info.coordinate_x ??
+      info.cordinate_x
+  ),
+  y: normalizeYCoord(
+    info.y ??
+      info.y_percent ??
+      info.yPercent ??
+      info.ycoord ??
+      info.y_coord ??
+      info.y_pos ??
+      info.ypos ??
+      info.coordinate_y ??
+      info.cordinate_y
+  ),
 });
 
 const pickImage = (item) => {
@@ -82,8 +126,30 @@ const normalizeItem = (item, index) => ({
   title: item.title ?? item.name ?? `Item ${index + 1}`,
   desc: item.desc ?? item.description ?? "",
   img: pickImage(item),
-  additionalInfo: Array.isArray(item.additionalInfo)
-    ? item.additionalInfo.map(normalizeAdditionalInfo)
+  additionalInfo: Array.isArray(
+    item.additionalInfo ??
+      item.additional_info ??
+      item.hotspots ??
+      item.points ??
+      item.markers
+  )
+    ? (
+        item.additionalInfo ??
+        item.additional_info ??
+        item.hotspots ??
+        item.points ??
+        item.markers
+      ).map(normalizeAdditionalInfo)
+    : item.coordinate_x !== undefined || item.cordinate_x !== undefined
+    ? [
+        normalizeAdditionalInfo({
+          title: item.title ?? item.name,
+          desc: item.desc ?? item.description,
+          img: pickImage(item),
+          x: item.coordinate_x ?? item.cordinate_x,
+          y: item.coordinate_y ?? item.cordinate_y,
+        }),
+      ]
     : [],
   raw: item,
 });

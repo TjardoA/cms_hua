@@ -62,6 +62,20 @@ export async function createPanoramaItem(payload, token) {
   return response.json();
 }
 
+export async function deletePanoramaItem(id, token) {
+  const response = await fetch(buildUrl(`/api/panorama/${id}/`, token), {
+    method: "DELETE",
+    headers: withAuth(token),
+  });
+
+  if (!response.ok) {
+    const message = await safeReadError(response);
+    throw new Error(
+      `Kon item ${id} niet verwijderen (${response.status}): ${message}`
+    );
+  }
+}
+
 export async function updatePanoramaItem(id, payload, token) {
   const response = await fetch(buildUrl(`/api/panorama/${id}/`, token), {
     method: "PUT",
@@ -77,20 +91,6 @@ export async function updatePanoramaItem(id, payload, token) {
   }
 
   return response.json();
-}
-
-export async function deletePanoramaItem(id, token) {
-  const response = await fetch(buildUrl(`/api/panorama/${id}/`, token), {
-    method: "DELETE",
-    headers: withAuth(token),
-  });
-
-  if (!response.ok) {
-    const message = await safeReadError(response);
-    throw new Error(
-      `Kon item ${id} niet verwijderen (${response.status}): ${message}`
-    );
-  }
 }
 
 async function safeReadError(response) {

@@ -10,7 +10,6 @@ export default function CmsPage() {
   const { canEdit, authToken } = useAuth();
   const { posts, loading, error, refresh } = useReadApi(authToken);
   const [items, setItems] = useState([]);
-  const [isSaving, setIsSaving] = useState(false);
 
   const onDragEnd = (result) => {
     if (!result.destination || !canEdit) return;

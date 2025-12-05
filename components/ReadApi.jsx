@@ -1,12 +1,55 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { API_BASE, resolveMediaUrl } from "../src/cms/apiClient";
 
+const toNumber = (value, fallback) => {
+  const num = typeof value === "string" ? parseFloat(value) : value;
+  return Number.isFinite(num) ? num : fallback;
+};
+
+const normalizeHotspotImage = (info = {}) => {
+  const candidates = [
+    info.img,
+    info.image,
+    info.image_url,
+    info.imageUrl,
+    info.photo,
+    info.photo_url,
+    info.photoUrl,
+    info.foto,
+    info.foto_url,
+    info.media,
+    info.media_url,
+    info.picture,
+    info.picture_url,
+  ];
+  return candidates.find((c) => typeof c === "string" && c.trim()) || "";
+};
+
 const normalizeAdditionalInfo = (info = {}) => ({
   title: info.title ?? info.name ?? "",
-  desc: info.desc ?? info.description ?? "",
+  description: info.description ?? info.desc ?? "",
   url: info.url ?? info.link ?? "",
-  x: Number.isFinite(info.x) ? info.x : 50,
-  y: Number.isFinite(info.y) ? info.y : 50,
+  img: normalizeHotspotImage(info),
+  x: toNumber(
+    info.x ??
+      info.x_percent ??
+      info.xPercent ??
+      info.xcoord ??
+      info.x_coord ??
+      info.coordinate_x ??
+      info.cordinate_x,
+    50
+  ),
+  y: toNumber(
+    info.y ??
+      info.y_percent ??
+      info.yPercent ??
+      info.ycoord ??
+      info.y_coord ??
+      info.coordinate_y ??
+      info.cordinate_y,
+    50
+  ),
 });
 
 const pickImage = (item) => {
@@ -63,16 +106,45 @@ const pickImage = (item) => {
   return resolveMediaUrl(found);
 };
 
-const normalizeItem = (item, index) => ({
-  id: String(item.id ?? index + 1),
-  title: item.title ?? item.name ?? `Item ${index + 1}`,
-  desc: item.desc ?? item.description ?? "",
-  img: pickImage(item),
-  additionalInfo: Array.isArray(item.additionalInfo)
-    ? item.additionalInfo.map(normalizeAdditionalInfo)
-    : [],
-  raw: item,
-});
+const normalizeItem = (item, index) => {
+  const baseAdditional =
+    item.additionalInfo ??
+    item.additional_info ??
+    item.hotspots ??
+    item.points ??
+    item.markers;
+
+  const fallbackHotspot = () => {
+    const hasCoord =
+      item.coordinate_x !== undefined ||
+      item.cordinate_x !== undefined ||
+      item.coordinate_y !== undefined ||
+      item.cordinate_y !== undefined;
+    if (!hasCoord) return [];
+    return [
+      normalizeAdditionalInfo({
+        title: item.title ?? item.name,
+        description: item.desc ?? item.description,
+        img: pickImage(item),
+        x: item.coordinate_x ?? item.cordinate_x,
+        y: item.coordinate_y ?? item.cordinate_y,
+      }),
+    ];
+  };
+
+  return {
+    id: String(item.id ?? index + 1),
+    title: item.title ?? item.name ?? `Item ${index + 1}`,
+    desc: item.desc ?? item.description ?? "",
+    catalogNumber: item.catalog_number ?? item.catalogNumber ?? "",
+    pageNumber: item.page_number ?? item.pageNumber ?? "",
+    img: pickImage(item),
+    additionalInfo: Array.isArray(baseAdditional)
+      ? baseAdditional.map(normalizeAdditionalInfo)
+      : fallbackHotspot(),
+    raw: item,
+  };
+};
 
 const useReadApi = (token) => {
   const [posts, setPosts] = useState([]);
