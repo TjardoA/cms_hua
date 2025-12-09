@@ -57,18 +57,26 @@ export function AuthProvider({ children }) {
     setUser(null);
   }, []);
 
+  const updateUser = useCallback((id, updates) => {
+    setUser((prev) => {
+      if (!prev || prev.id !== id) return prev;
+      return { ...prev, ...updates };
+    });
+  }, []);
+
   const value = useMemo(
     () => ({
       user,
       login,
       logout,
+      updateUser,
       isAuthenticated: Boolean(user),
       isSuper: user?.role === "super",
       canEdit: user?.role === "super",
       authToken:
         user?.token || (user?.role === "super" ? SUPER_TOKEN : ADMIN_TOKEN),
     }),
-    [user, login, logout]
+    [user, login, logout, updateUser]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
